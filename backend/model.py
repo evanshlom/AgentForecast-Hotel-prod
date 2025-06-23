@@ -78,6 +78,20 @@ class ForecastModel:
         historical_data = generate_historical_data()
         df, _, _ = prepare_features(historical_data)
         
+        # Include last 7 days of historical data
+        historical_hours = 7 * 24
+        historical_records = []
+        hist_tail = historical_data.tail(historical_hours)
+        
+        for _, row in hist_tail.iterrows():
+            historical_records.append({
+                'date': row['datetime'].isoformat(),
+                'rooms': float(row['rooms']),
+                'cleaning': int(row['cleaning']),
+                'security': int(row['security']),
+                'type': 'historical'
+            })
+        
         predictions = []
         current = df.tail(24).copy()
         
@@ -95,7 +109,8 @@ class ForecastModel:
                     'date': t.isoformat(),
                     'rooms': float(np.clip(pred[i,0], 0, 100)),
                     'cleaning': int(max(0, pred[i,1])),
-                    'security': int(max(0, pred[i,2]))
+                    'security': int(max(0, pred[i,2])),
+                    'type': 'forecast'
                 })
             
             # Next 24 hours features
@@ -109,7 +124,8 @@ class ForecastModel:
                 'weekend': (times.dayofweek >= 5) * 1.0
             })
         
-        return predictions[:hours]
+        # Combine historical and forecast
+        return historical_records + predictions[:hours]
     
     def generate_historical(self, hours=168):
         """Generate historical data for context"""
