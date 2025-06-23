@@ -201,22 +201,25 @@ function App() {
                             Reset to Original Forecast
                         </button>
                     </div>
-                    {modifications.length > 0 && (
-                        <div className="modifications-panel">
-                            <h3>Active Modifications</h3>
-                            {modifications.map((mod, idx) => (
-                                <div key={idx} className="modification-item">
-                                    <strong>{mod.metric}</strong>: {mod.type} by {mod.value}
-                                    <span className="mod-dates"> ({mod.start_date} to {mod.end_date})</span>
-                                    <div className="mod-reason">{mod.reason}</div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                    <div style={{ height: '400px', position: 'relative' }}>
+                    <div style={{ height: '250px', position: 'relative' }}>
                         <canvas ref={chartRef}></canvas>
                     </div>
                     {!forecast && <div className="placeholder">Waiting for forecast data...</div>}
+                    
+                    {modifications.length > 0 && (
+                        <div className="modifications-summary" style={{ fontSize: '12px', marginTop: '15px' }}>
+                            <h3 style={{ fontSize: '14px', margin: '0 0 10px 0' }}>Applied Modifications ({modifications.length} total)</h3>
+                            <div className="modifications-list">
+                                {modifications.map((mod, idx) => (
+                                    <div key={idx} className="modification-item" style={{ marginBottom: '8px', lineHeight: '1.3' }}>
+                                        <strong>{mod.metric}</strong>: {mod.type} by {mod.value}
+                                        <span className="mod-dates"> ({mod.start_date} to {mod.end_date})</span>
+                                        <div className="mod-reason" style={{ color: '#666', fontSize: '11px' }}>{mod.reason}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
