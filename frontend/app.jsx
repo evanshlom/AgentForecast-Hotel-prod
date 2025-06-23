@@ -8,6 +8,7 @@ function App() {
     const [wsConnected, setWsConnected] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [editedCells, setEditedCells] = useState(new Set());
+    const [hoveredIndex, setHoveredIndex] = useState(null);
     
     const ws = useRef(null);
     const chartRef = useRef(null);
@@ -58,8 +59,21 @@ function App() {
     }, [messages]);
 
     useEffect(() => {
-        if (forecast && chartRef.current) updateChart(forecast);
-    }, [forecast]);
+        if (forecast && chartRef.current) {
+            if (!chartInstance.current) {
+                updateChart(forecast);
+            } else if (hoveredIndex !== null || hoveredIndex !== undefined) {
+                // Just update point sizes without recreating chart
+                const pointRadius = Array(forecast.length).fill(0).map((_, i) => 
+                    hoveredIndex === i ? 6 : 0
+                );
+                chartInstance.current.data.datasets.forEach(dataset => {
+                    dataset.pointRadius = pointRadius;
+                });
+                chartInstance.current.update('none'); // 'none' animation mode for instant update
+            }
+        }
+    }, [forecast, hoveredIndex]);
 
     const updateChart = (data) => {
         if (!chartRef.current) return;
@@ -88,7 +102,10 @@ function App() {
                         borderColor: 'goldenrod',
                         borderWidth: 2,
                         tension: 0,
-                        pointRadius: 0
+                        pointRadius: 0,
+                        pointBackgroundColor: 'goldenrod',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
                     },
                     {
                         label: 'Cleaning (Historical)',
@@ -96,7 +113,10 @@ function App() {
                         borderColor: 'royalblue',
                         borderWidth: 2,
                         tension: 0,
-                        pointRadius: 0
+                        pointRadius: 0,
+                        pointBackgroundColor: 'royalblue',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
                     },
                     {
                         label: 'Security (Historical)',
@@ -104,7 +124,10 @@ function App() {
                         borderColor: 'crimson',
                         borderWidth: 2,
                         tension: 0,
-                        pointRadius: 0
+                        pointRadius: 0,
+                        pointBackgroundColor: 'crimson',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
                     },
                     // Forecast - dashed
                     {
@@ -114,7 +137,10 @@ function App() {
                         borderWidth: 2,
                         borderDash: [5, 5],
                         tension: 0,
-                        pointRadius: 0
+                        pointRadius: 0,
+                        pointBackgroundColor: 'goldenrod',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
                     },
                     {
                         label: 'Cleaning (Forecast)',
@@ -123,7 +149,10 @@ function App() {
                         borderWidth: 2,
                         borderDash: [5, 5],
                         tension: 0,
-                        pointRadius: 0
+                        pointRadius: 0,
+                        pointBackgroundColor: 'royalblue',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
                     },
                     {
                         label: 'Security (Forecast)',
@@ -132,7 +161,10 @@ function App() {
                         borderWidth: 2,
                         borderDash: [5, 5],
                         tension: 0,
-                        pointRadius: 0
+                        pointRadius: 0,
+                        pointBackgroundColor: 'crimson',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
                     }
                 ]
             },
@@ -299,7 +331,11 @@ function App() {
                                         {forecast.slice(-168).map((row, idx) => {
                                             const actualIdx = forecast.length - 168 + idx;
                                             return (
-                                                <tr key={actualIdx} className={row.type}>
+                                                <tr key={actualIdx} 
+                                                    className={row.type}
+                                                    onMouseEnter={() => setHoveredIndex(actualIdx)}
+                                                    onMouseLeave={() => setHoveredIndex(null)}
+                                                >
                                                     <td>{formatDate(row.date)}</td>
                                                     <td className="type-cell">{row.type}</td>
                                                     <td 

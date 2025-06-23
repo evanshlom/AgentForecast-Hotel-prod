@@ -225,6 +225,10 @@ h2 {
     font-weight: bold;
 }
 
+.forecast-table tr:hover {
+    background: #e3f2fd !important;
+}
+
 .type-cell {
     font-size: 11px;
     text-transform: uppercase;
