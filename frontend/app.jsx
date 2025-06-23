@@ -122,8 +122,20 @@ function App() {
             chartInstance.current.destroy();
         }
 
-        // Prepare data for Chart.js with better date formatting
-        const labels = forecastData.map(d => new Date(d.date));
+        // Prepare labels with custom formatting
+        const labels = forecastData.map(d => {
+            const date = new Date(d.date);
+            const hours = date.getHours();
+            const dateStr = date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' });
+            
+            // Show date at midnight, hours otherwise
+            if (hours === 0) {
+                return dateStr;
+            } else if (hours % 6 === 0) {
+                return hours.toString().padStart(2, '0') + ':00';
+            }
+            return '';
+        });
         
         chartInstance.current = new Chart(ctx, {
             type: 'line',
@@ -137,7 +149,8 @@ function App() {
                         backgroundColor: 'transparent',
                         borderWidth: 2,
                         borderDash: [5, 5],
-                        tension: 0
+                        tension: 0,
+                        pointRadius: 0
                     },
                     {
                         label: 'Cleaning (Forecast)',
@@ -146,7 +159,8 @@ function App() {
                         backgroundColor: 'transparent',
                         borderWidth: 2,
                         borderDash: [5, 5],
-                        tension: 0
+                        tension: 0,
+                        pointRadius: 0
                     },
                     {
                         label: 'Security (Forecast)',
@@ -155,7 +169,8 @@ function App() {
                         backgroundColor: 'transparent',
                         borderWidth: 2,
                         borderDash: [5, 5],
-                        tension: 0
+                        tension: 0,
+                        pointRadius: 0
                     }
                 ]
             },
@@ -179,40 +194,17 @@ function App() {
                     y: {
                         title: {
                             display: true,
-                            text: 'Units / Percentage'
+                            text: 'Count / Percentage'
                         }
                     },
                     x: {
-                        type: 'time',
-                        time: {
-                            unit: 'hour',
-                            displayFormats: {
-                                hour: 'HH:mm',
-                                day: 'MM/DD'
-                            }
-                        },
                         ticks: {
                             maxRotation: 0,
                             autoSkip: false,
-                            callback: function(value, index, ticks) {
-                                const date = new Date(value);
-                                const hours = date.getHours();
-                                
-                                // Show date at midnight
-                                if (hours === 0) {
-                                    return date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' });
-                                }
-                                // Show specific hours
-                                if (hours % 6 === 0) {
-                                    return hours.toString().padStart(2, '0') + ':00';
-                                }
-                                return '';
-                            },
                             font: function(context) {
-                                const date = new Date(context.tick.value);
-                                const hours = date.getHours();
-                                // Larger font for dates
-                                if (hours === 0) {
+                                const label = context.tick.label;
+                                // Bold font for dates
+                                if (label && label.includes('/')) {
                                     return {
                                         size: 10,
                                         weight: 'bold'
@@ -228,11 +220,9 @@ function App() {
                             drawOnChartArea: true,
                             drawTicks: true,
                             color: function(context) {
-                                if (context.tick && context.tick.value) {
-                                    const date = new Date(context.tick.value);
-                                    if (date.getHours() === 0) {
-                                        return 'rgba(0, 0, 0, 0.2)';
-                                    }
+                                const label = context.tick.label;
+                                if (label && label.includes('/')) {
+                                    return 'rgba(0, 0, 0, 0.2)';
                                 }
                                 return 'rgba(0, 0, 0, 0.05)';
                             }
@@ -364,5 +354,3 @@ function App() {
 }
 
 ReactDOM.render(<App />, document.getElementById('root'));
-
-// http://localhost:3567/
