@@ -102,6 +102,44 @@ class ForecastServer:
                         "timestamp": datetime.now().isoformat()
                     }
                 })
+
+            elif message_type == "cell_edit":
+                # Handle individual cell edits
+                edit_data = message.get("data", {})
+                index = edit_data.get("index")
+                metric = edit_data.get("metric")
+                value = edit_data.get("value")
+                
+                if index is not None and metric and value is not None:
+                    # Update the specific cell
+                    if 0 <= index < len(self.current_forecast):
+                        if metric == 'rooms':
+                            self.current_forecast[index][metric] = float(value)
+                        else:
+                            self.current_forecast[index][metric] = int(value)
+                        
+                        # Add to modifications log
+                        date_str = self.current_forecast[index]['date']
+                        date_obj = datetime.fromisoformat(date_str).date()
+                        
+                        self.modifications.append({
+                            "metric": metric,
+                            "type": "set",
+                            "value": value,
+                            "start_date": date_obj.isoformat(),
+                            "end_date": date_obj.isoformat(),
+                            "reason": "Manual spreadsheet edit"
+                        })
+                        
+                        # Broadcast update
+                        await self.broadcast_update({
+                            "type": "forecast_update",
+                            "data": {
+                                "forecast": self.current_forecast,
+                                "modifications": self.modifications,
+                                "timestamp": datetime.now().isoformat()
+                            }
+                        })
                 
         except json.JSONDecodeError:
             logger.error(f"Invalid JSON received: {message_str}")

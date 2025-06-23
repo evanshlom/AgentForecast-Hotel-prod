@@ -20,9 +20,10 @@ body {
 .chart-panel {
     flex: 1;
     padding: 20px;
+    overflow-y: auto;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
 }
 
 .chat-header {
@@ -30,6 +31,21 @@ body {
     background: #8B4513;
     color: white;
     font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.connection-status {
+    font-size: 12px;
+}
+
+.connection-status.connected {
+    color: #4CAF50;
+}
+
+.connection-status.disconnected {
+    color: #f44336;
 }
 
 .chat-messages {
@@ -55,6 +71,20 @@ body {
 .ai-message {
     background: #ecf0f1;
     color: #2c3e50;
+}
+
+.system-message {
+    background: #e8f5e9;
+    color: #2e7d32;
+    text-align: center;
+    max-width: 100%;
+    font-size: 13px;
+}
+
+.ai-message.loading {
+    background: #f5f5f5;
+    color: #999;
+    font-style: italic;
 }
 
 .chat-input {
@@ -101,12 +131,19 @@ button:disabled {
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
 canvas {
     max-height: 400px;
 }
 
 h2 {
-    margin: 0 0 20px 0;
+    margin: 0;
     color: #2c3e50;
 }
 
@@ -114,4 +151,120 @@ h2 {
     text-align: center;
     color: #999;
     padding: 40px;
+}
+
+/* Spreadsheet styles */
+.spreadsheet-container {
+    margin-top: 20px;
+    border-top: 1px solid #e0e0e0;
+    padding-top: 20px;
+}
+
+.spreadsheet-container h3 {
+    font-size: 16px;
+    margin: 0 0 15px 0;
+    color: #2c3e50;
+}
+
+.spreadsheet-scroll {
+    height: 250px;
+    overflow: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+}
+
+.forecast-table {
+    width: max-content;
+    min-width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.forecast-table th {
+    background: #f5f5f5;
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 2px solid #ddd;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    white-space: nowrap;
+}
+
+.forecast-table td {
+    padding: 6px 12px;
+    border-bottom: 1px solid #eee;
+    white-space: nowrap;
+}
+
+.forecast-table tr.historical {
+    background: #fafafa;
+}
+
+.forecast-table tr.historical td {
+    color: #666;
+}
+
+.forecast-table td[contenteditable="true"] {
+    cursor: pointer;
+    background: white;
+}
+
+.forecast-table td[contenteditable="true"]:hover {
+    background: #f0f8ff;
+}
+
+.forecast-table td[contenteditable="true"]:focus {
+    outline: 2px solid #4CAF50;
+    background: #f0f8ff;
+}
+
+.forecast-table td.edited {
+    background: #fffbf0 !important;
+    font-weight: bold;
+}
+
+.type-cell {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #888;
+}
+
+/* Modifications summary */
+.modifications-summary {
+    font-size: 12px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.modifications-summary h3 {
+    font-size: 14px;
+    margin: 0 0 10px 0;
+    color: #2c3e50;
+}
+
+.modifications-list {
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.modification-item {
+    margin-bottom: 8px;
+    padding: 8px;
+    background: #f9f9f9;
+    border-radius: 4px;
+    line-height: 1.4;
+}
+
+.mod-dates {
+    color: #666;
+    font-size: 11px;
+}
+
+.mod-reason {
+    color: #666;
+    font-size: 11px;
+    margin-top: 4px;
 }

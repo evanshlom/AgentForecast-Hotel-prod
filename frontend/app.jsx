@@ -7,6 +7,7 @@ function App() {
     const [modifications, setModifications] = useState([]);
     const [wsConnected, setWsConnected] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [editedCells, setEditedCells] = useState(new Set());
     
     const ws = useRef(null);
     const chartRef = useRef(null);
@@ -32,6 +33,7 @@ function App() {
                 case 'initial_data':
                     setForecast(message.data.forecast);
                     setModifications(message.data.modifications || []);
+                    setEditedCells(new Set());
                     break;
                 case 'agent_response':
                     setMessages(prev => [...prev, { type: 'ai', text: message.data.response }]);
@@ -161,6 +163,44 @@ function App() {
     const clearModifications = () => {
         if (!wsConnected) return;
         ws.current.send(JSON.stringify({ type: 'clear_modifications' }));
+        setEditedCells(new Set());
+    };
+
+    const handleCellEdit = (index, metric, newValue) => {
+        const numValue = parseFloat(newValue);
+        if (isNaN(numValue)) return;
+        
+        // Apply bounds
+        let boundedValue = numValue;
+        if (metric === 'rooms') {
+            boundedValue = Math.max(0, Math.min(100, numValue));
+        } else {
+            boundedValue = Math.max(0, Math.round(numValue));
+        }
+        
+        // Send edit to server
+        ws.current.send(JSON.stringify({
+            type: 'cell_edit',
+            data: {
+                index,
+                metric,
+                value: boundedValue,
+                date: forecast[index].date
+            }
+        }));
+        
+        // Track edited cell
+        setEditedCells(prev => new Set(prev).add(`${index}-${metric}`));
+    };
+
+    const formatDate = (dateStr) => {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-US', { 
+            month: '2-digit', 
+            day: '2-digit', 
+            hour: '2-digit', 
+            hour12: false 
+        });
     };
 
     return (
@@ -206,15 +246,69 @@ function App() {
                     </div>
                     {!forecast && <div className="placeholder">Waiting for forecast data...</div>}
                     
+                    {forecast && (
+                        <div className="spreadsheet-container">
+                            <h3>Forecast Data (Editable)</h3>
+                            <div className="spreadsheet-scroll">
+                                <table className="forecast-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date/Time</th>
+                                            <th>Type</th>
+                                            <th>Rooms (%)</th>
+                                            <th>Cleaning</th>
+                                            <th>Security</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {forecast.slice(-168).map((row, idx) => {
+                                            const actualIdx = forecast.length - 168 + idx;
+                                            return (
+                                                <tr key={actualIdx} className={row.type}>
+                                                    <td>{formatDate(row.date)}</td>
+                                                    <td className="type-cell">{row.type}</td>
+                                                    <td 
+                                                        contentEditable={row.type === 'forecast'}
+                                                        suppressContentEditableWarning
+                                                        className={editedCells.has(`${actualIdx}-rooms`) ? 'edited' : ''}
+                                                        onBlur={(e) => row.type === 'forecast' && handleCellEdit(actualIdx, 'rooms', e.target.textContent)}
+                                                    >
+                                                        {row.rooms.toFixed(1)}
+                                                    </td>
+                                                    <td 
+                                                        contentEditable={row.type === 'forecast'}
+                                                        suppressContentEditableWarning
+                                                        className={editedCells.has(`${actualIdx}-cleaning`) ? 'edited' : ''}
+                                                        onBlur={(e) => row.type === 'forecast' && handleCellEdit(actualIdx, 'cleaning', e.target.textContent)}
+                                                    >
+                                                        {row.cleaning}
+                                                    </td>
+                                                    <td 
+                                                        contentEditable={row.type === 'forecast'}
+                                                        suppressContentEditableWarning
+                                                        className={editedCells.has(`${actualIdx}-security`) ? 'edited' : ''}
+                                                        onBlur={(e) => row.type === 'forecast' && handleCellEdit(actualIdx, 'security', e.target.textContent)}
+                                                    >
+                                                        {row.security}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+                    
                     {modifications.length > 0 && (
-                        <div className="modifications-summary" style={{ fontSize: '12px', marginTop: '15px' }}>
-                            <h3 style={{ fontSize: '14px', margin: '0 0 10px 0' }}>Applied Modifications ({modifications.length} total)</h3>
+                        <div className="modifications-summary">
+                            <h3>Applied Modifications ({modifications.length} total)</h3>
                             <div className="modifications-list">
                                 {modifications.map((mod, idx) => (
-                                    <div key={idx} className="modification-item" style={{ marginBottom: '8px', lineHeight: '1.3' }}>
+                                    <div key={idx} className="modification-item">
                                         <strong>{mod.metric}</strong>: {mod.type} by {mod.value}
                                         <span className="mod-dates"> ({mod.start_date} to {mod.end_date})</span>
-                                        <div className="mod-reason" style={{ color: '#666', fontSize: '11px' }}>{mod.reason}</div>
+                                        <div className="mod-reason">{mod.reason}</div>
                                     </div>
                                 ))}
                             </div>
