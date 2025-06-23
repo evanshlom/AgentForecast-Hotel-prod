@@ -13,6 +13,8 @@ services:
     build: ./frontend
     ports:
       - "3567:80"
+    volumes: # auto-refresh the localhost on file saves 
+      - ./frontend:/usr/share/nginx/html
     depends_on:
       - backend
     restart: unless-stopped

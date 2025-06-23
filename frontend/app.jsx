@@ -68,9 +68,10 @@ function App() {
         const forecastOnly = data.filter(d => d.type === 'forecast');
         const labels = data.map(d => {
             const date = new Date(d.date);
-            return date.getHours() === 0 
-                ? date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' })
-                : date.getHours() % 6 === 0 ? `${date.getHours()}:00` : '';
+            const hours = date.getHours();
+            if (hours === 0) return ['0', date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' })];
+            if (hours === 6 || hours === 12 || hours === 18) return [`${hours}`, ''];
+            return ['', ''];
         });
         
         chartInstance.current = new Chart(chartRef.current.getContext('2d'), {
