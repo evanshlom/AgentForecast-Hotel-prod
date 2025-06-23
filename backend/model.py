@@ -92,7 +92,6 @@ class ForecastModel:
             for i in range(24):
                 t = start + timedelta(hours=i+1)
                 predictions.append({
-                    'datetime': t,
                     'date': t.isoformat(),
                     'rooms': float(np.clip(pred[i,0], 0, 100)),
                     'cleaning': int(max(0, pred[i,1])),
@@ -123,7 +122,6 @@ class ForecastModel:
         historical = []
         for _, row in recent.iterrows():
             historical.append({
-                'datetime': row['datetime'],
                 'date': row['datetime'].isoformat(),
                 'rooms': float(row['rooms']),
                 'cleaning': int(row['cleaning']),
