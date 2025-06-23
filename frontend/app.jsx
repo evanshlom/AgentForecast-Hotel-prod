@@ -166,6 +166,36 @@ function App() {
         setEditedCells(new Set());
     };
 
+    const downloadCSV = () => {
+        if (!forecast) return;
+        
+        // Create CSV content
+        const headers = ['Date/Time', 'Type', 'Rooms (%)', 'Cleaning', 'Security'];
+        const rows = forecast.map(row => [
+            formatDate(row.date),
+            row.type,
+            row.rooms.toFixed(1),
+            row.cleaning,
+            row.security
+        ]);
+        
+        const csvContent = [
+            headers.join(','),
+            ...rows.map(row => row.join(','))
+        ].join('\n');
+        
+        // Create download link
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `wynn_forecast_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
     const handleCellEdit = (index, metric, newValue) => {
         const numValue = parseFloat(newValue);
         if (isNaN(numValue)) return;
@@ -248,7 +278,12 @@ function App() {
                     
                     {forecast && (
                         <div className="spreadsheet-container">
-                            <h3>Forecast Data (Editable)</h3>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                                <h3>Forecast Data (Editable)</h3>
+                                <button onClick={downloadCSV} style={{ padding: '8px 16px', fontSize: '13px' }}>
+                                    Download CSV
+                                </button>
+                            </div>
                             <div className="spreadsheet-scroll">
                                 <table className="forecast-table">
                                     <thead>
