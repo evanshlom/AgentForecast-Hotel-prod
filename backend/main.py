@@ -132,6 +132,7 @@ class ForecastServer:
                 item_date = datetime.fromisoformat(item['date']).date()
                 
                 if start_date <= item_date <= end_date and metric in item:
+                    print(f"Applying {metric} modification: {mod_type} {value}")  # Debug line
                     current_value = item[metric]
                     
                     if mod_type == 'percentage':

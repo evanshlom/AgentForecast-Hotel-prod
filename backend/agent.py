@@ -77,11 +77,12 @@ class ForecastAgent:
                     if 'material' in mod:
                         mod['metric'] = mod.pop('material')
                     
-                    # Convert date strings to date objects
-                    if 'start_date' in mod:
-                        mod['start_date'] = datetime.strptime(mod['start_date'], '%Y-%m-%d').date()
-                    if 'end_date' in mod:
-                        mod['end_date'] = datetime.strptime(mod['end_date'], '%Y-%m-%d').date()
+                    ## The date conversion below was breaking the prod integration, but it mightve been needed for the initial standalone demo i dont recall.
+                    # # Convert date strings to date objects
+                    # if 'start_date' in mod:
+                    #     mod['start_date'] = datetime.strptime(mod['start_date'], '%Y-%m-%d').date()
+                    # if 'end_date' in mod:
+                    #     mod['end_date'] = datetime.strptime(mod['end_date'], '%Y-%m-%d').date()
                 
                 self.conversation_history.append({"role": "assistant", "content": result['response']})
                 return result
