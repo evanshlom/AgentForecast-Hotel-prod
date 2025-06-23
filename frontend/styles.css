@@ -225,7 +225,13 @@ h2 {
     font-weight: bold;
 }
 
+/* Hovering cursor over table */
 .forecast-table tr:hover {
+    background: #e3f2fd !important;
+}
+
+/* Hovering cursor over chart causes table highlight */
+.forecast-table tr.hovered {
     background: #e3f2fd !important;
 }
 

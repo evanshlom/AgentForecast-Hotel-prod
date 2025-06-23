@@ -178,6 +178,29 @@ function App() {
                 scales: {
                     y: { title: { display: true, text: 'Count / Percentage' } },
                     x: { ticks: { maxRotation: 0, autoSkip: false } }
+                },
+                onHover: (event, activeElements) => {
+                    if (activeElements.length > 0) {
+                        const dataIndex = activeElements[0].index;
+                        setHoveredIndex(dataIndex);
+                        
+                        // Auto-scroll table
+                        const tableContainer = document.querySelector('.spreadsheet-scroll');
+                        const rows = tableContainer?.querySelectorAll('tbody tr');
+                        if (rows && dataIndex >= data.length - 168) {
+                            const rowIndex = dataIndex - (data.length - 168);
+                            const targetRow = rows[rowIndex];
+                            if (targetRow) {
+                                targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                        }
+                    } else {
+                        setHoveredIndex(null);
+                    }
+                },
+                interaction: {
+                    mode: 'index',
+                    intersect: false
                 }
             }
         });
@@ -332,7 +355,7 @@ function App() {
                                             const actualIdx = forecast.length - 168 + idx;
                                             return (
                                                 <tr key={actualIdx} 
-                                                    className={row.type}
+                                                    className={`${row.type} ${hoveredIndex === actualIdx ? 'hovered' : ''}`}
                                                     onMouseEnter={() => setHoveredIndex(actualIdx)}
                                                     onMouseLeave={() => setHoveredIndex(null)}
                                                 >
